@@ -5,9 +5,16 @@ from PyQt6 import QtGui, QtWidgets, uic
 from LMS.module.reader import Reader
 from LMS.module.writer import Writer
 from LMS.msbf.msbf import MSBF
-from LMS.msbf.nodes import (LMS_BaseNode, LMS_BranchNode, LMS_EntryNode,
-                            LMS_EventNode, LMS_JumpNode, LMS_MessageNode,
-                            LMS_NodeSubtypes)
+from LMS.msbf.nodes import (
+    LMS_BaseNode,
+    LMS_BranchNode,
+    LMS_EntryNode,
+    LMS_EventNode,
+    LMS_JumpNode,
+    LMS_MessageNode,
+    LMS_NodeSubtypes,
+)
+
 
 class MSBF_Editor(QtWidgets.QMainWindow):
     def __init__(self):
@@ -69,13 +76,15 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         # List views
         self.flowchart_list.itemClicked.connect(self.flowchart_clicked)
         self.node_list.itemClicked.connect(self.node_clicked)
-        self.branch_list.itemDoubleClicked.connect(self.branch_node_double_clicked)
+        self.branch_list.itemDoubleClicked.connect(
+            self.branch_node_double_clicked)
         self.strings_list.itemClicked.connect(self.string_clicked)
 
         # Buttons
         self.add_string_button.clicked.connect(self.add_string)
         self.edit_string_button.clicked.connect(self.edit_string)
-        self.string_reference_button.clicked.connect(self.find_string_reference)
+        self.string_reference_button.clicked.connect(
+            self.find_string_reference)
         self.add_next_node_button.clicked.connect(self.add_node)
         self.add_branch_button.clicked.connect(self.add_branch)
         self.add_flowchart_button.clicked.connect(self.new_flowchart)
@@ -87,7 +96,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.param_2_edit.editingFinished.connect(self.on_param_2_edit)
         self.param_3_edit.editingFinished.connect(self.on_param_3_edit)
         self.param_4_edit.editingFinished.connect(self.on_param_4_edit)
-        self.string_index_edit.editingFinished.connect(self.on_string_index_edit)
+        self.string_index_edit.editingFinished.connect(
+            self.on_string_index_edit)
 
         # Disable till msbf is loaded
         self.actionSave.setEnabled(False)
@@ -158,7 +168,6 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             caption="Save", filter="MSBF (*.msbf)"
         )[0]
 
-
         try:
             with open(self.path, "w+") as m:
                 pass
@@ -171,11 +180,11 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         with open(self.path, "rb+") as flow:
             flow.truncate()
             writer = Writer(flow)
-           
-            self.msbf.write(writer)
-           
 
-        self.prompt_message("The MSBF has been written succesfully.", type="Message")
+            self.msbf.write(writer)
+
+        self.prompt_message(
+            "The MSBF has been written succesfully.", type="Message")
 
     def new_msbf(self):
         self.flowchart_list.clear()
@@ -183,7 +192,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.branch_list.clear()
 
         self.initialize_msbf(is_new=True)
-        self.prompt_message("A new MSBF file has been created.", type="Message")
+        self.prompt_message(
+            "A new MSBF file has been created.", type="Message")
 
     def new_flowchart(self):
         label = QtWidgets.QInputDialog.getText(
@@ -213,11 +223,11 @@ class MSBF_Editor(QtWidgets.QMainWindow):
     def go_back(self):
         # TODO: Implement going back as many times until root
         if self.previous_nodes is None:
-            return 
-        
+            return
+
         self.node_list.clear()
         self.branch_list.clear()
-        
+
         self.current_nodes = self.previous_nodes
         self.add_nodes_to_list()
 
@@ -229,9 +239,10 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             self.node_list.addItem(str(node))
             node.next_node_id = self.current_nodes[i + 1].id
 
-        self.node_list.addItem(str(self.current_nodes[len(self.current_nodes) - 1]))
+        self.node_list.addItem(
+            str(self.current_nodes[len(self.current_nodes) - 1]))
 
-    def add_nodes_to_list(self, node_to_add: LMS_BaseNode | None=None):
+    def add_nodes_to_list(self, node_to_add: LMS_BaseNode | None = None):
         if node_to_add == None:
             for node in self.current_nodes:
                 self.node_list.addItem(str(node))
@@ -277,7 +288,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
     def flowchart_clicked(self):
         self.node_list.clear()
 
-        label = self.flowchart_list.item(self.flowchart_list.currentRow()).text()
+        label = self.flowchart_list.item(
+            self.flowchart_list.currentRow()).text()
         flowchart = self.msbf.flw3.flowcharts[label]
         self.current_nodes = flowchart
 
@@ -307,7 +319,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                 self.param_2_edit.setEnabled(True)
                 self.param_3_edit.setEnabled(True)
                 self.param_4_edit.setEnabled(True)
-            
+
         # Set generic information
         self.type_edit.setText(node.get_node_type())
         self.subtype_edit.setText(str(node.subtype))
@@ -345,9 +357,9 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.node_list.clear()
         self.previous_nodes = self.current_nodes
         self.current_nodes = self.msbf.flw3.serialize_node(node)
-      
+
         self.add_nodes_to_list()
-       
+
     def add_node(self):
         self.popup = NextNode_Popup(self)
 
@@ -400,7 +412,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.index_edit.setText(str(self.strings_list.currentRow()))
 
     def add_string(self):
-        new_string = QtWidgets.QInputDialog.getText(self, "Add string", "String")[0]
+        new_string = QtWidgets.QInputDialog.getText(
+            self, "Add string", "String")[0]
         self.strings_list.addItem(new_string)
         self.msbf.flw3.string_table.append(new_string)
 
@@ -522,48 +535,56 @@ class NextNode_Popup(QtWidgets.QMainWindow):
             new_node.subtype_value = 0
 
         if type(new_node) == LMS_JumpNode:
-            label = QtWidgets.QInputDialog.getText(self, "Label", "Input flowchart label you'd like to jump to")[0]
-            
+            label = QtWidgets.QInputDialog.getText(
+                self, "Label", "Input flowchart label you'd like to jump to"
+            )[0]
+
             if len(label) == 0:
-                return 
+                return
 
             if label not in self.parent.msbf.flw3.flowcharts:
-                self.parent.prompt_message("This label is not in the flowchart list", type="Warning")
-                return 
-            
+                self.parent.prompt_message(
+                    "This label is not in the flowchart list", type="Warning"
+                )
+                return
+
             new_node.param_3 = 65535
-            new_node.next_node_id = self.parent.msbf.fen1.get_index_by_label(label)
+            new_node.next_node_id = self.parent.msbf.fen1.get_index_by_label(
+                label)
 
         if new_node.subtype == LMS_NodeSubtypes.string_table:
-            string_index = QtWidgets.QInputDialog.getInt(self, "String index", "Input the index from the string table")[0]
+            string_index = QtWidgets.QInputDialog.getInt(
+                self, "String index", "Input the index from the string table"
+            )[0]
             new_node.string_table_index = string_index
 
         new_node.id = len(self.parent.msbf.flw3.nodes)
         self.parent.msbf.flw3.nodes.append(new_node)
-        self.parent.node_count_edit.setText(str(len(self.parent.msbf.flw3.nodes)))
+        self.parent.node_count_edit.setText(
+            str(len(self.parent.msbf.flw3.nodes)))
 
         if not self.branch:
             if type(new_node) == LMS_BranchNode:
                 new_node.param_4 = len(self.parent.msbf.flw3.branch_list)
-            
+
             self.parent.current_nodes.insert(
                 self.parent.node_list.currentRow() + 1, new_node
             )
             self.parent.refresh_node_list()
             self.hide()
             return
-        
-        
 
         # Check if there are 2 or more branch nodes and prevent the new node from being added
         if type(new_node) == LMS_BranchNode:
             for node in self.parent.get_branch_nodes():
                 if type(node) == LMS_BranchNode:
-                    self.parent.prompt_message("Adding multiple branch nodes to an existing branch is not support as this may cause issues.", type="Warning")
-                    return 
-                
+                    self.parent.prompt_message(
+                        "Adding multiple branch nodes to an existing branch is not support as this may cause issues.",
+                        type="Warning",
+                    )
+                    return
+
         # Branch node handling
-        
         self.parent.branch_list.addItem(str(new_node))
         selected_branch_node: LMS_BranchNode = self.parent.get_current_node()
         selected_branch_node.branches.append(new_node)
@@ -572,9 +593,10 @@ class NextNode_Popup(QtWidgets.QMainWindow):
         id_index = selected_branch_node.param_4 + selected_branch_node.param_3
         # Increase the branch count short
         selected_branch_node.param_3 += 1
-        self.parent.branch_id_count_edit.setText(str(len(self.parent.msbf.flw3.branch_list)))
+        self.parent.branch_id_count_edit.setText(
+            str(len(self.parent.msbf.flw3.branch_list))
+        )
         self.parent.msbf.flw3.branch_list.insert(id_index, new_node.id)
-        
 
         # Make sure any added branch nodes have their branch index parameter set correctly
         for node in self.parent.get_branch_nodes():
@@ -582,6 +604,7 @@ class NextNode_Popup(QtWidgets.QMainWindow):
                 node.param_4 = len(self.parent.msbf.flw3.branch_list)
 
         self.hide()
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
