@@ -1,4 +1,4 @@
-# FLW3 Editor
+# MSBF FLW3 Editor
 FLW3 Editor is an application used for editing revision 3 of the `.msbf` format from Nintendo's LMS library. This version is most notably used in several 3DS games such as, Tomodachi Life, Animal Crossing: New Leaf, Nintendo Badge Arcade and many more.
 
 This application is dedicated for researching the format, for an eventual node editor application to be developed.
