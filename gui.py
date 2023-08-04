@@ -237,7 +237,6 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.msbf.flw3.nodes.append(entry_node)
         self.msbf.flw3.flowcharts[label] = []
         self.msbf.flw3.flowcharts[label].append(entry_node)
-        print(self.msbf.fen1.labels)
         self.flowchart_list.addItem(label)
 
     def go_back(self):
