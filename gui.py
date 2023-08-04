@@ -112,6 +112,9 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.msbf = MSBF()
         self.msbt = MSBT()
 
+        if is_new:
+          self.msbt = None
+
         self.flowchart_list.clear()
         self.branch_list.clear()
         self.node_list.clear()
@@ -133,7 +136,10 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
             if len(msbf_path) == 0:
                 return
-            
+            with open(msbf_path, "rb+") as flow:
+                reader = Reader(flow.read())
+                self.msbf.read(reader)
+                    
             if len(msbt_path) > 0:
                 with open(msbt_path, "rb+") as message:
                     reader = Reader(message.read())
