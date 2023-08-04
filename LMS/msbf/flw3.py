@@ -136,15 +136,15 @@ class FLW3:
 
         # Write all the nodes
         for node in self.nodes:
-            if type(node) == LMS_MessageNode:
+            if isinstance(node, LMS_MessageNode):
                 writer.write_uint8(1)
-            elif type(node) == LMS_BranchNode:
+            elif isinstance(node, LMS_BranchNode):
                 writer.write_uint8(2)
-            elif type(node) == LMS_EventNode:
+            elif isinstance(node, LMS_EventNode):
                 writer.write_uint8(3)
-            elif type(node) == LMS_EntryNode:
+            elif isinstance(node, LMS_EntryNode):
                 writer.write_uint8(4)
-            elif type(node) == LMS_JumpNode:
+            elif isinstance(node, LMS_JumpNode):
                 writer.write_uint8(5)
 
             if node.subtype == LMS_NodeSubtypes.string_table:
