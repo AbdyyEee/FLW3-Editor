@@ -10,6 +10,7 @@ from LMS.msbf.nodes import (LMS_BaseNode, LMS_BranchNode, LMS_EntryNode,
                             LMS_EventNode, LMS_JumpNode, LMS_MessageNode,
                             LMS_NodeSubtypes)
 
+
 class MSBF_Editor(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -135,14 +136,14 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             with open(msbf_path, "rb+") as flow:
                 reader = Reader(flow.read())
                 self.msbf.read(reader)
-                    
+
             if len(msbt_path) > 0:
                 with open(msbt_path, "rb+") as message:
                     reader = Reader(message.read())
                     self.msbt.read(reader)
             else:
                 self.msbt = None
-            
+
         # Populate the flowchart list
         for label in self.msbf.flw3.flowcharts:
             self.flowchart_list.addItem(label)
@@ -323,7 +324,16 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                 self.param_2_edit.setEnabled(True)
                 self.param_3_edit.setEnabled(True)
                 self.param_4_edit.setEnabled(True)
-            
+
+        if isinstance(node, LMS_MessageNode):
+            if self.msbt is not None:
+                self.label_edit.setText(self.msbt.lbl1.labels[node.param_3])
+                self.message_edit.setText(
+                    self.msbt.txt2.messages[node.param_3])
+        else:
+            self.label_edit.clear()
+            self.message_edit.clear()
+
         # Set generic information
         self.type_edit.setText(node.get_node_type())
         self.subtype_edit.setText(str(node.subtype))
@@ -565,7 +575,6 @@ class NextNode_Popup(QtWidgets.QMainWindow):
 
         new_node.id = len(self.parent.msbf.flw3.nodes)
         self.parent.msbf.flw3.nodes.append(new_node)
-        self.parent.node_count_edit.setText(str(len(self.parent.msbf.flw3.nodes)))
 
         if not self.branch:
             if isinstance(new_node, LMS_BranchNode):
