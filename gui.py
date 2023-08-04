@@ -265,12 +265,17 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         if node_to_add == None:
             for node in self.current_nodes:
                 self.node_list.addItem(str(node))
+                # Prevent the next labels nodes from being added
+                if isinstance(node, LMS_JumpNode):
+                    break
         else:
             node_list = self.msbf.flw3.serialize_node(node_to_add)
             self.current_nodes = node_list
 
             for node in self.current_nodes:
                 self.node_list.addItem(str(node))
+                if isinstance(node, LMS_JumpNode):
+                    break
 
     def get_current_node(self) -> LMS_BaseNode:
         index = self.node_list.currentRow()
