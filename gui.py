@@ -301,6 +301,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         node = self.get_current_node()
 
         # Handling enabling of parameter edits
+        # Handling enabling of parameter edits
         if type(node) == LMS_EntryNode or type(node) == LMS_JumpNode:
             self.param_1_edit.setEnabled(False)
             self.param_2_edit.setEnabled(False)
@@ -313,12 +314,12 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                 self.param_2_edit.setEnabled(True)
                 self.param_3_edit.setEnabled(True)
                 self.param_4_edit.setEnabled(True)
-            if type(node) == LMS_BranchNode:
+            else:
                 self.add_branch_button.setEnabled(True)
                 self.param_1_edit.setEnabled(True)
                 self.param_2_edit.setEnabled(True)
-                self.param_3_edit.setEnabled(True)
-                self.param_4_edit.setEnabled(True)
+                self.param_3_edit.setEnabled(False)
+                self.param_4_edit.setEnabled(False)
 
         # Set generic information
         self.type_edit.setText(node.get_node_type())
