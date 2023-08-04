@@ -113,7 +113,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.msbt = MSBT()
 
         if is_new:
-          self.msbt = None
+            self.msbt = None
 
         self.flowchart_list.clear()
         self.branch_list.clear()
@@ -136,22 +136,13 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
             if len(msbf_path) == 0:
                 return
-            
+
             if len(msbt_path) > 0:
                 with open(msbt_path, "rb+") as message:
                     reader = Reader(message.read())
                     self.msbt.read(reader)
             else:
                 self.msbt = None
-            
-            with open(msbf_path, "rb+") as flow:
-                reader = Reader(flow.read())
-                if self.msbt is None:
-                    self.msbf.read(reader, None)
-                else:
-                    self.msbf.read(reader, self.msbt.txt2)
-                    
-            
 
             with open(msbf_path, "rb+") as flow:
                 reader = Reader(flow.read())
@@ -160,6 +151,12 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                 else:
                     self.msbf.read(reader, self.msbt.txt2)
 
+            with open(msbf_path, "rb+") as flow:
+                reader = Reader(flow.read())
+                if self.msbt is None:
+                    self.msbf.read(reader, None)
+                else:
+                    self.msbf.read(reader, self.msbt.txt2)
 
         # Populate the flowchart list
         for label in self.msbf.flw3.flowcharts:
@@ -174,7 +171,6 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             label = self.msbf.fen1.labels[index]
             entry_node = self.msbf.flw3.get_entry_node_by_label(label)
             self.msbf.flw3.serialize_flowchart(entry_node)
-
 
         # Re-enable all the previously disabled items
         self.actionSave.setEnabled(True)
@@ -241,6 +237,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.msbf.flw3.nodes.append(entry_node)
         self.msbf.flw3.flowcharts[label] = []
         self.msbf.flw3.flowcharts[label].append(entry_node)
+        print(self.msbf.fen1.labels)
         self.flowchart_list.addItem(label)
 
     def go_back(self):
@@ -595,6 +592,8 @@ class NextNode_Popup(QtWidgets.QMainWindow):
                     "This label is not in the flowchart list", type="Warning"
                 )
                 return
+
+            new_node.jump_label = label
 
             new_node.param_3 = 65535
             new_node.next_node_id = self.parent.msbf.fen1.get_index_by_label(
