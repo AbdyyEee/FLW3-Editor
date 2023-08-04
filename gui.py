@@ -168,20 +168,19 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             caption="Save", filter="MSBF (*.msbf)"
         )[0]
 
-        try:
-            with open(self.path, "w+") as m:
-                pass
-        except:
-            self.prompt_message(
-                "An error occured while exporting the MSBF file.", type="Warning"
-            )
-            return
+        # Create the file
+        with open(self.path, "w+"):
+            pass
 
         with open(self.path, "rb+") as flow:
             flow.truncate()
             writer = Writer(flow)
-
-            self.msbf.write(writer)
+            try:
+                self.msbf.write(writer)
+            except:
+                self.prompt_message(
+                    "An error occured while writing the MSBF file.", type="Warning"
+                )
 
         self.prompt_message(
             "The MSBF has been written succesfully.", type="Message")
@@ -301,14 +300,13 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         node = self.get_current_node()
 
         # Handling enabling of parameter edits
-        # Handling enabling of parameter edits
-        if type(node) == LMS_EntryNode or type(node) == LMS_JumpNode:
+        if isinstance(node, LMS_EntryNode) or isinstance(node, LMS_JumpNode):
             self.param_1_edit.setEnabled(False)
             self.param_2_edit.setEnabled(False)
             self.param_3_edit.setEnabled(False)
             self.param_4_edit.setEnabled(False)
         else:
-            if type(node) is not LMS_BranchNode:
+            if not isinstance(node, LMS_BranchNode):
                 self.add_branch_button.setEnabled(False)
                 self.param_1_edit.setEnabled(True)
                 self.param_2_edit.setEnabled(True)
@@ -343,7 +341,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.param_3_edit.setText(str(node.param_3))
         self.param_4_edit.setText(str(node.param_4))
 
-        if type(node) == LMS_BranchNode:
+        if isinstance(node, LMS_BranchNode):
             # Add branches to branch list
             for branch in node.branches:
                 self.branch_list.addItem(str(branch))
@@ -432,8 +430,9 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.node_list.clear()
         self.branch_list.clear()
         referenced_node = None
+
         for node in self.msbf.flw3.nodes:
-            if type(node) in [LMS_BranchNode, LMS_EventNode]:
+            if isinstance(node, LMS_BranchNode) or isinstance(node, LMS_EventNode):
                 if node.string_table_index == self.strings_list.currentRow():
                     referenced_node = node
 
@@ -512,7 +511,7 @@ class NextNode_Popup(QtWidgets.QMainWindow):
             case 5:
                 self.parent.branch_list.addItem("None")
 
-        if type(new_node) == LMS_EntryNode or type(new_node) == LMS_JumpNode:
+        if isinstance(new_node, LMS_EntryNode) or isinstance(new_node, LMS_JumpNode):
             self.parent.warn_if_entry_or_jump()
 
         if type(new_node) not in [LMS_EntryNode, LMS_JumpNode, LMS_MessageNode]:
@@ -535,7 +534,7 @@ class NextNode_Popup(QtWidgets.QMainWindow):
             new_node.subtype = LMS_NodeSubtypes(255)
             new_node.subtype_value = 0
 
-        if type(new_node) == LMS_JumpNode:
+        if isinstance(new_node, LMS_JumpNode):
             label = QtWidgets.QInputDialog.getText(
                 self, "Label", "Input flowchart label you'd like to jump to"
             )[0]
@@ -565,7 +564,7 @@ class NextNode_Popup(QtWidgets.QMainWindow):
             str(len(self.parent.msbf.flw3.nodes)))
 
         if not self.branch:
-            if type(new_node) == LMS_BranchNode:
+            if isinstance(new_node, LMS_BranchNode):
                 new_node.param_4 = len(self.parent.msbf.flw3.branch_list)
 
             self.parent.current_nodes.insert(
@@ -576,9 +575,9 @@ class NextNode_Popup(QtWidgets.QMainWindow):
             return
 
         # Check if there are 2 or more branch nodes and prevent the new node from being added
-        if type(new_node) == LMS_BranchNode:
+        if isinstance(new_node, LMS_BranchNode):
             for node in self.parent.get_branch_nodes():
-                if type(node) == LMS_BranchNode:
+                if isinstance(new_node, LMS_BranchNode):
                     self.parent.prompt_message(
                         "Adding multiple branch nodes to an existing branch is not support as this may cause issues.",
                         type="Warning",
@@ -601,7 +600,7 @@ class NextNode_Popup(QtWidgets.QMainWindow):
 
         # Make sure any added branch nodes have their branch index parameter set correctly
         for node in self.parent.get_branch_nodes():
-            if type(node) == LMS_BranchNode:
+            if isinstance(new_node, LMS_BranchNode):
                 node.param_4 = len(self.parent.msbf.flw3.branch_list)
 
         self.hide()
