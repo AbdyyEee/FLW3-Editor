@@ -36,7 +36,7 @@ class FLW3:
             result.append(next_node)
             node = next_node
 
-    def serialize_flowchart(self, node: LMS_ENtryNode):
+    def serialize_flowchart(self, node: LMS_EntryNode):
         key = node.label
         while True:
             next_node = self.try_get_node(node.next_node_id)

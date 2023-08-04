@@ -5,6 +5,7 @@ from PyQt6 import QtGui, QtWidgets, uic
 from LMS.module.reader import Reader
 from LMS.module.writer import Writer
 from LMS.msbf.msbf import MSBF
+from LMS.msbt.msbt import MSBT
 from LMS.msbf.nodes import (LMS_BaseNode, LMS_BranchNode, LMS_EntryNode,
                             LMS_EventNode, LMS_JumpNode, LMS_MessageNode,
                             LMS_NodeSubtypes)
