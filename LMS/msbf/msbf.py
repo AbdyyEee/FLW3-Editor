@@ -12,24 +12,17 @@ class MSBF:
         self.flw3 = FLW3()
         self.fen1 = LMS_HashTableBlock()
 
-    def read(self, reader: Reader) -> None:
+    def read(self, reader: Reader, txt2) -> None:
         self.binary.read_header(reader)
 
         flw3_offset = self.binary.search_block_by_name(reader, "FLW3")
         fen1_offset = self.binary.search_block_by_name(reader, "FEN1")
 
-        reader.seek(flw3_offset)
-        self.flw3.read(reader)
-
         reader.seek(fen1_offset)
         self.fen1.read(reader)
 
-        for index in self.fen1.labels:
-            label = self.fen1.labels[index]
-            entry_key = self.flw3.nodes[index]
-            entry_key.label = label
-
-            self.flw3.flowcharts[label] = self.flw3.flowcharts.pop(entry_key)
+        reader.seek(flw3_offset)
+        self.flw3.read(reader, self.fen1, txt2)
 
     def write(self, writer: Writer) -> None:
         self.binary.magic = "MsgFlwBn"

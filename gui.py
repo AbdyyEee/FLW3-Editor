@@ -10,6 +10,7 @@ from LMS.msbf.nodes import (LMS_BaseNode, LMS_BranchNode, LMS_EntryNode,
                             LMS_EventNode, LMS_JumpNode, LMS_MessageNode,
                             LMS_NodeSubtypes)
 
+
 class MSBF_Editor(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
@@ -93,6 +94,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.param_4_edit.editingFinished.connect(self.on_param_4_edit)
         self.string_index_edit.editingFinished.connect(
             self.on_string_index_edit)
+        self.node_list.itemDoubleClicked.connect(self.jump_node_double_clicked)
 
         # Disable till msbf is loaded
         self.actionSave.setEnabled(False)
@@ -131,18 +133,22 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
             if len(msbf_path) == 0:
                 return
-
-            with open(msbf_path, "rb+") as flow:
-                reader = Reader(flow.read())
-                self.msbf.read(reader)
-                    
+            
             if len(msbt_path) > 0:
                 with open(msbt_path, "rb+") as message:
                     reader = Reader(message.read())
                     self.msbt.read(reader)
             else:
                 self.msbt = None
-            
+
+            with open(msbf_path, "rb+") as flow:
+                reader = Reader(flow.read())
+                if self.msbt is None:
+                    self.msbf.read(reader, None)
+                else:
+                    self.msbf.read(reader, self.msbt.txt2)
+
+
         # Populate the flowchart list
         for label in self.msbf.flw3.flowcharts:
             self.flowchart_list.addItem(label)
@@ -156,6 +162,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             label = self.msbf.fen1.labels[index]
             entry_node = self.msbf.flw3.get_entry_node_by_label(label)
             self.msbf.flw3.serialize_flowchart(entry_node)
+
 
         # Re-enable all the previously disabled items
         self.actionSave.setEnabled(True)
@@ -323,7 +330,15 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                 self.param_2_edit.setEnabled(True)
                 self.param_3_edit.setEnabled(True)
                 self.param_4_edit.setEnabled(True)
-            
+
+        if isinstance(node, LMS_MessageNode):
+            if self.msbt is not None:
+                self.label_edit.setText(self.msbt.lbl1.labels[node.param_3])
+                self.message_edit.setText(node.message)
+        else:
+            self.label_edit.clear()
+            self.message_edit.clear()
+
         # Set generic information
         self.type_edit.setText(node.get_node_type())
         self.subtype_edit.setText(str(node.subtype))
@@ -363,6 +378,22 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.current_nodes = self.msbf.flw3.serialize_node(node)
 
         self.add_nodes_to_list()
+
+    def jump_node_double_clicked(self):
+        node: LMS_JumpNode = self.get_current_node()
+        label_index = None
+        label = None
+        if isinstance(node, LMS_JumpNode):
+            for i in range(self.flowchart_list.count()):
+                if self.flowchart_list.item(i).text() == node.jump_label:
+                    label_index = i
+                    label = self.flowchart_list.item(i).text()
+
+            self.flowchart_list.item(label_index).setSelected(True)
+            self.node_list.clear()
+            self.branch_list.clear()
+            entry_node = self.msbf.flw3.get_entry_node_by_label(label)
+            self.add_nodes_to_list(node_to_add=entry_node)
 
     def add_node(self):
         self.popup = NextNode_Popup(self)
@@ -565,7 +596,6 @@ class NextNode_Popup(QtWidgets.QMainWindow):
 
         new_node.id = len(self.parent.msbf.flw3.nodes)
         self.parent.msbf.flw3.nodes.append(new_node)
-        self.parent.node_count_edit.setText(str(len(self.parent.msbf.flw3.nodes)))
 
         if not self.branch:
             if isinstance(new_node, LMS_BranchNode):

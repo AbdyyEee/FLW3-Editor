@@ -11,6 +11,8 @@ from LMS.msbf.nodes import (
     LMS_MessageNode,
     LMS_NodeSubtypes,
 )
+from LMS.common.lms_hashtable import LMS_HashTableBlock
+from LMS.msbt.txt2 import TXT2
 
 
 class FLW3:
@@ -51,7 +53,7 @@ class FLW3:
                 if node.label == label:
                     return node
 
-    def read(self, reader: Reader):
+    def read(self, reader: Reader, fen1: LMS_HashTableBlock, txt2: TXT2):
         string_table_index = 0
         self.block.read_header(reader)
         data_start = reader.tell()
@@ -61,12 +63,14 @@ class FLW3:
 
         reader.skip(12)
         # Read the nodes
-        for _ in range(node_count):
+        for i in range(node_count):
             type = reader.read_uint8()
 
             match type:
                 case 1:
                     node = LMS_MessageNode()
+                    if txt2 is not None:
+                        node.message = txt2.messages[node.param_3]
                     node.read(reader)
                 case 2:
                     node = LMS_BranchNode()
@@ -77,10 +81,14 @@ class FLW3:
                 case 4:
                     node = LMS_EntryNode()
                     node.read(reader)
-                    self.flowcharts[node] = []
+                    label = fen1.labels[i]
+                    node.label = label
+                    self.flowcharts[label] = []
                 case 5:
                     node = LMS_JumpNode()
                     node.read(reader)
+                    node.jump_label = fen1.labels[node.next_node_id]
+
             self.nodes.append(node)
 
             if node.subtype == LMS_NodeSubtypes.string_table:
@@ -88,7 +96,6 @@ class FLW3:
                 reader.seek(data_start)
                 reader.seek(node.subtype_value, 1)
                 string = reader.read_string_nt()
-                node.string = string
                 node.string_table_index = string_table_index
                 self.string_table.append(string)
                 reader.seek(end)
@@ -103,7 +110,7 @@ class FLW3:
         # Serialize every node
         for node in self.nodes:
             if isinstance(node, LMS_BranchNode):
-                for id in self.branch_list[node.param_4 : node.param_3 + node.param_4]:
+                for id in self.branch_list[node.param_4: node.param_3 + node.param_4]:
                     next_branch_node = self.try_get_node(id)
                     node.branches.append(next_branch_node)
             else:
@@ -130,6 +137,7 @@ class FLW3:
         writer.write_bytes(b"\x00" * 12)
 
         # Write all the nodes
+
         for node in self.nodes:
             if isinstance(node, LMS_MessageNode):
                 writer.write_uint8(1)
@@ -144,7 +152,8 @@ class FLW3:
 
             if node.subtype == LMS_NodeSubtypes.string_table:
                 node.subtype_value = string_offset
-                string_offset += len(self.string_table[node.string_table_index]) + 1
+                string_offset += len(
+                    self.string_table[node.string_table_index]) + 1
 
             node.write(writer)
 

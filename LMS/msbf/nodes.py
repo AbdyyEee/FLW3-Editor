@@ -65,12 +65,7 @@ class LMS_BaseNode:
 class LMS_MessageNode(LMS_BaseNode):
     def __init__(self):
         super().__init__()
-
-        # TODO: Implement parsing messages from a MSBT
         self.message: str = ""
-
-    def read(self, reader: Reader):
-        super().read(reader)
 
 
 class LMS_BranchNode(LMS_BaseNode):
@@ -89,10 +84,10 @@ class LMS_EventNode(LMS_BaseNode):
 class LMS_EntryNode(LMS_BaseNode):
     def __init__(self):
         super().__init__()
-        self.label = ""
+        self.label = None
 
 
 class LMS_JumpNode(LMS_BaseNode):
     def __init__(self):
         super().__init__()
-        pass
+        self.jump_label = None
