@@ -111,6 +111,9 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.msbf = MSBF()
         self.msbt = MSBT()
 
+        if is_new:
+          self.msbt = None
+
         self.flowchart_list.clear()
         self.branch_list.clear()
         self.node_list.clear()
