@@ -136,16 +136,22 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
             if len(msbf_path) == 0:
                 return
-            with open(msbf_path, "rb+") as flow:
-                reader = Reader(flow.read())
-                self.msbf.read(reader)
-                    
+            
             if len(msbt_path) > 0:
                 with open(msbt_path, "rb+") as message:
                     reader = Reader(message.read())
                     self.msbt.read(reader)
             else:
                 self.msbt = None
+            
+            with open(msbf_path, "rb+") as flow:
+                reader = Reader(flow.read())
+                if self.msbt is None:
+                    self.msbf.read(reader, None)
+                else:
+                    self.msbf.read(reader, self.msbt.txt2)
+                    
+            
 
             with open(msbf_path, "rb+") as flow:
                 reader = Reader(flow.read())
