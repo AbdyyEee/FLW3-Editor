@@ -31,21 +31,17 @@ class FLW3:
         result.append(node)
         while True:
             next_node = self.try_get_node(node.next_node_id)
-
             if next_node == None:
                 return result
-
             result.append(next_node)
             node = next_node
 
-    def serialize_flowchart(self, node: LMS_BaseNode):
+    def serialize_flowchart(self, node: LMS_ENtryNode):
         key = node.label
         while True:
             next_node = self.try_get_node(node.next_node_id)
-
             if next_node == None:
                 break
-
             self.flowcharts[key].append(next_node)
             node = next_node
 
@@ -64,7 +60,6 @@ class FLW3:
         branch_id_count = reader.read_uint16()
 
         reader.skip(12)
-
         # Read the nodes
         for _ in range(node_count):
             type = reader.read_uint8()

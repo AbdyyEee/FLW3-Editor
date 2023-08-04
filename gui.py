@@ -5,17 +5,9 @@ from PyQt6 import QtGui, QtWidgets, uic
 from LMS.module.reader import Reader
 from LMS.module.writer import Writer
 from LMS.msbf.msbf import MSBF
-from LMS.msbt.msbt import MSBT
-from LMS.msbf.nodes import (
-    LMS_BaseNode,
-    LMS_BranchNode,
-    LMS_EntryNode,
-    LMS_EventNode,
-    LMS_JumpNode,
-    LMS_MessageNode,
-    LMS_NodeSubtypes,
-)
-
+from LMS.msbf.nodes import (LMS_BaseNode, LMS_BranchNode, LMS_EntryNode,
+                            LMS_EventNode, LMS_JumpNode, LMS_MessageNode,
+                            LMS_NodeSubtypes)
 
 class MSBF_Editor(QtWidgets.QMainWindow):
     def __init__(self):
@@ -311,7 +303,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.branch_list.clear()
         node = self.get_current_node()
 
-        if isinstance(node, LMS_EntryNode) or isinstance(node, LMS_JumpNode):
+        # Handling enabling of parameter edits
+        if type(node) == LMS_EntryNode or type(node) == LMS_JumpNode:
             self.param_1_edit.setEnabled(False)
             self.param_2_edit.setEnabled(False)
             self.param_3_edit.setEnabled(False)
@@ -327,20 +320,9 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                 self.add_branch_button.setEnabled(True)
                 self.param_1_edit.setEnabled(True)
                 self.param_2_edit.setEnabled(True)
-                self.param_3_edit.setEnabled(False)
-                self.param_4_edit.setEnabled(False)
-
-        if isinstance(node, LMS_MessageNode):
-            if self.msbt is not None:
-                self.label_edit.setText(self.msbt.lbl1.labels[node.param_3])
-                self.message_edit.setText(self.msbt.txt2.messages[node.param_3])
-        else:
-            self.label_edit.clear()
-            self.message_edit.clear()
-
-    
-
-
+                self.param_3_edit.setEnabled(True)
+                self.param_4_edit.setEnabled(True)
+            
         # Set generic information
         self.type_edit.setText(node.get_node_type())
         self.subtype_edit.setText(str(node.subtype))
@@ -582,6 +564,7 @@ class NextNode_Popup(QtWidgets.QMainWindow):
 
         new_node.id = len(self.parent.msbf.flw3.nodes)
         self.parent.msbf.flw3.nodes.append(new_node)
+        self.parent.node_count_edit.setText(str(len(self.parent.msbf.flw3.nodes)))
 
         if not self.branch:
             if isinstance(new_node, LMS_BranchNode):
