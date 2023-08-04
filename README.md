@@ -16,4 +16,4 @@ Any contributions are welcome, do so by just downloading this repo. This applica
 ## Bugs
 **This tool may be buggy**, report any bugs as an issue in the issues tab of this github page. You may also shoot me a friend request on Discord, AbdyyEee#1503 for any other questions or bug reporting you have.
 
-![image](https://github.com/AbdyyEee/FLW3-Editor/assets/82438230/bdf12577-4e61-4794-b071-34826b41bcb8)
+![image](https://github.com/AbdyyEee/FLW3-Editor/assets/82438230/03f2c4f2-e90b-4391-851a-52bead1d3129)
