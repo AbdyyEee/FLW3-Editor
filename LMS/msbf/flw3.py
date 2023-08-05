@@ -105,6 +105,9 @@ class FLW3:
         # Read all the branch ids
         for _ in range(branch_id_count):
             id = reader.read_uint16()
+            if id == 65535:
+                self.branch_list.append(None)
+                continue 
             self.branch_list.append(id)
 
         # Serialize every node
@@ -157,10 +160,10 @@ class FLW3:
 
             node.write(writer)
 
+        
         for id in self.branch_list:
-            if id == None:
-                id == 65535
-                continue
+            if id is None:
+               id = 65535
             writer.write_uint16(id)
 
         for string in self.string_table:

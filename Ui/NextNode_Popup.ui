@@ -52,11 +52,6 @@
    </item>
    <item>
     <property name="text">
-     <string>LMS_EntryNode</string>
-    </property>
-   </item>
-   <item>
-    <property name="text">
      <string>LMS_JumpNode</string>
     </property>
    </item>

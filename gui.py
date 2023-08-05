@@ -75,6 +75,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.branch_list.itemDoubleClicked.connect(
             self.branch_node_double_clicked)
         self.strings_list.itemClicked.connect(self.string_clicked)
+        self.node_list.itemDoubleClicked.connect(self.jump_node_double_clicked)
 
         # Buttons
         self.add_string_button.clicked.connect(self.add_string)
@@ -94,7 +95,6 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.param_4_edit.editingFinished.connect(self.on_param_4_edit)
         self.string_index_edit.editingFinished.connect(
             self.on_string_index_edit)
-        self.node_list.itemDoubleClicked.connect(self.jump_node_double_clicked)
 
         # Disable till msbf is loaded
         self.actionSave.setEnabled(False)
@@ -146,17 +146,10 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
             with open(msbf_path, "rb+") as flow:
                 reader = Reader(flow.read())
-                if self.msbt is None:
-                    self.msbf.read(reader, None)
-                else:
+                if self.msbt is not None:
                     self.msbf.read(reader, self.msbt.txt2)
-
-            with open(msbf_path, "rb+") as flow:
-                reader = Reader(flow.read())
-                if self.msbt is None:
-                    self.msbf.read(reader, None)
                 else:
-                    self.msbf.read(reader, self.msbt.txt2)
+                    self.msbf.read(reader, None)
 
         # Populate the flowchart list
         for label in self.msbf.flw3.flowcharts:
@@ -265,7 +258,6 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         if node_to_add == None:
             for node in self.current_nodes:
                 self.node_list.addItem(str(node))
-                # Prevent the next labels nodes from being added
                 if isinstance(node, LMS_JumpNode):
                     break
         else:
@@ -347,7 +339,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         if isinstance(node, LMS_MessageNode):
             if self.msbt is not None:
                 self.label_edit.setText(self.msbt.lbl1.labels[node.param_3])
-                self.message_edit.setText(node.message)
+                self.message_edit.setText(
+                    self.msbt.txt2.messages[node.param_3])
         else:
             self.label_edit.clear()
             self.message_edit.clear()
@@ -382,7 +375,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
     def branch_node_double_clicked(self):
         node = self.get_current_branch_node()
 
-        if node == "None":
+        if node is None:
             return
 
         self.branch_list.clear()
@@ -521,8 +514,8 @@ class NextNode_Popup(QtWidgets.QMainWindow):
         self.subtype_box.setDisabled(True)
 
         # Add the "none" type used in branches
-        if self.branch:
-            self.type_box.addItem("None")
+        # if self.branch:
+        # self.type_box.addItem("None")
 
         self.show()
 
@@ -554,14 +547,7 @@ class NextNode_Popup(QtWidgets.QMainWindow):
             case 2:
                 new_node = LMS_EventNode()
             case 3:
-                new_node = LMS_EntryNode()
-            case 4:
                 new_node = LMS_JumpNode()
-            case 5:
-                self.parent.branch_list.addItem("None")
-
-        if isinstance(new_node, LMS_EntryNode) or isinstance(new_node, LMS_JumpNode):
-            self.parent.warn_if_entry_or_jump()
 
         if type(new_node) not in [LMS_EntryNode, LMS_JumpNode, LMS_MessageNode]:
             match self.subtype_box.currentIndex():
@@ -596,8 +582,6 @@ class NextNode_Popup(QtWidgets.QMainWindow):
                     "This label is not in the flowchart list", type="Warning"
                 )
                 return
-
-            new_node.jump_label = label
 
             new_node.param_3 = 65535
             new_node.next_node_id = self.parent.msbf.fen1.get_index_by_label(
@@ -642,9 +626,6 @@ class NextNode_Popup(QtWidgets.QMainWindow):
         id_index = selected_branch_node.param_4 + selected_branch_node.param_3
         # Increase the branch count short
         selected_branch_node.param_3 += 1
-        self.parent.branch_id_count_edit.setText(
-            str(len(self.parent.msbf.flw3.branch_list))
-        )
         self.parent.msbf.flw3.branch_list.insert(id_index, new_node.id)
 
         # Make sure any added branch nodes have their branch index parameter set correctly
