@@ -263,7 +263,6 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         else:
             node_list = self.msbf.flw3.serialize_node(node_to_add)
             self.current_nodes = node_list
-
             for node in self.current_nodes:
                 self.node_list.addItem(str(node))
                 if isinstance(node, LMS_JumpNode):
