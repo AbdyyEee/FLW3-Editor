@@ -21,6 +21,12 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.previous_nodes: list[LMS_BaseNode] | None = None
 
         # -- Variables --
+        # Parameter labels
+        self.param_1_label: QtWidgets.QLabel = None
+        self.param_2_label: QtWidgets.QLabel = None
+        self.param_3_label: QtWidgets.QLabel = None
+        self.param_4_label: QtWidgets.QLabel = None
+
         # List widgets
         self.flowchart_list: QtWidgets.QListView = None
         self.node_list: QtWidgets.QListView = None
@@ -332,8 +338,22 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                 self.add_branch_button.setEnabled(True)
                 self.param_1_edit.setEnabled(True)
                 self.param_2_edit.setEnabled(True)
-                self.param_3_edit.setEnabled(True)
-                self.param_4_edit.setEnabled(True)
+                self.param_3_edit.setEnabled(False)
+                self.param_4_edit.setEnabled(False)
+
+        # Changing labels for certain nodes
+        if isinstance(node, LMS_MessageNode):
+            self.param_3_label.setText("MSBT index")
+            self.param_4_label.setText("File index")
+        else:
+            self.param_3_label.setText("Parameter 3")
+
+        if isinstance(node, LMS_BranchNode):
+            self.param_3_label.setText("Branch count")
+            self.param_4_label.setText("Branch index")
+        else:
+            self.param_3_label.setText("Parameter 3")
+            self.param_4_label.setText("Parameter 4")
 
         if isinstance(node, LMS_MessageNode):
             if self.msbt is not None:
