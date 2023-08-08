@@ -13,7 +13,7 @@ class MSBT:
 
     def read(self, reader: Reader) -> None:
         self.binary.read_header(reader) 
-
+       
         lbl1_offset = self.binary.search_block_by_name(reader, "LBL1")
         txt2_offset = self.binary.search_block_by_name(reader, "TXT2")
 
@@ -21,4 +21,4 @@ class MSBT:
         self.lbl1.read(reader)
 
         reader.seek(txt2_offset)
-        self.txt2.read(reader)
+        self.txt2.read(reader, self.binary.bom)

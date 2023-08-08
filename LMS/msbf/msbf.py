@@ -27,7 +27,6 @@ class MSBF:
     def write(self, writer: Writer) -> None:
         self.binary.magic = "MsgFlwBn"
         self.binary.file_size = 0
-        self.binary.bom = "little"
         self.binary.encoding = LMS_MessageEncoding(0)
         self.binary.revision = 3
         self.binary.block_count = 2

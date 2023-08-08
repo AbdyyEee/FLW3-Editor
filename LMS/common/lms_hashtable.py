@@ -62,7 +62,8 @@ class LMS_HashTableBlock:
         offset_to_labels = slot_count * 8 + 4
         size += offset_to_labels
 
-        hash_slots = ordered = dict(sorted(hash_slots.items(), key=lambda x: x[0]))
+        hash_slots = ordered = dict(
+            sorted(hash_slots.items(), key=lambda x: x[0]))
 
         for i in range(slot_count):
             if i in hash_slots:

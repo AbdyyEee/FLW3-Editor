@@ -680,6 +680,21 @@ li.checked::marker { content: &quot;\2612&quot;; }
     <string>Save</string>
    </property>
   </action>
+  <action name="actionChange_to_little">
+   <property name="text">
+    <string>Little</string>
+   </property>
+  </action>
+  <action name="actionBig">
+   <property name="text">
+    <string>Big</string>
+   </property>
+  </action>
+  <action name="actionEncoding_2">
+   <property name="text">
+    <string>Encoding</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

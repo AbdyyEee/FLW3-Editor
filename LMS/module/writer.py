@@ -11,6 +11,10 @@ class Writer:
         self.byte_order = byte_order
         self.types = le_types if byte_order == "little" else be_types
 
+    def change_byte_order(self, byte_order: str):
+        self.byte_order = byte_order
+        self.types = le_types if byte_order == "little" else be_types
+
     def skip(self, length: int) -> None:
         self.data.read(length)
 

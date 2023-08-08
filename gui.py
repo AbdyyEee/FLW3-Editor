@@ -19,6 +19,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.current_label: str = None
         self.current_nodes: list[LMS_BaseNode] = []
         self.previous_nodes: list[LMS_BaseNode] | None = None
+        self.byte_order: str = None
 
         # -- Variables --
         # Parameter labels
@@ -156,6 +157,11 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                     self.msbf.read(reader, self.msbt.txt2)
                 else:
                     self.msbf.read(reader, None)
+        
+        if is_new:
+            self.msbf.binary.bom = self.byte_order
+        else:
+           self.byte_order = self.msbf.binary.bom
 
         # Populate the flowchart list
         for label in self.msbf.flw3.flowcharts:
@@ -193,7 +199,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
         with open(self.path, "rb+") as flow:
             flow.truncate()
-            writer = Writer(flow)
+            writer = Writer(flow, self.byte_order)
             try:
                 self.msbf.write(writer)
             except:
@@ -209,7 +215,14 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.node_list.clear()
         self.branch_list.clear()
 
+        byte_order = QtWidgets.QInputDialog.getText(self, "Select byte order", "Choose from 'little' (3DS) or 'big' (Wii U)")[0].lower()
+        if byte_order not in ["little", "big"]:
+            self.prompt_message("Select a proper byte order", type="Warning")
+            return 
+        
+        self.byte_order = byte_order
         self.initialize_msbf(is_new=True)
+
         self.prompt_message(
             "A new MSBF file has been created.", type="Message")
 
@@ -345,10 +358,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         if isinstance(node, LMS_MessageNode):
             self.param_3_label.setText("MSBT index")
             self.param_4_label.setText("File index")
-        else:
-            self.param_3_label.setText("Parameter 3")
-
-        if isinstance(node, LMS_BranchNode):
+    
+        elif isinstance(node, LMS_BranchNode):
             self.param_3_label.setText("Branch count")
             self.param_4_label.setText("Branch index")
         else:

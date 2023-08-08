@@ -21,6 +21,10 @@ class LMS_Binary:
     def read_header(self, reader: Reader) -> None:
         self.magic = reader.read_string_len(8)
         self.bom = "little" if reader.read_bytes(2) == b"\xFF\xFE" else "big"
+
+        if self.bom == "big":
+            reader.change_byte_order("big")
+
         reader.skip(2)
         self.encoding = LMS_MessageEncoding(reader.read_uint8())
         self.revision = reader.read_uint8()
@@ -30,10 +34,11 @@ class LMS_Binary:
         reader.skip(10)
 
     def write_header(self, writer: Writer) -> None:
+        self.bom = writer.byte_order
         writer.write_string(self.magic)
-        writer.write_bytes(b"\xFF\xFE" if self.bom == "little" else b"\xFE\xFF")
+        writer.write_bytes(b"\xFF\xFE" if self.bom ==
+                           "little" else b"\xFE\xFF")
         writer.write_bytes(b"\x00\x00")
-
         writer.write_uint8(self.encoding.value)
         writer.write_uint8(self.revision)
         writer.write_uint16(self.block_count)

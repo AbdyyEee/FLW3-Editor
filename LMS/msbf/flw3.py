@@ -65,7 +65,6 @@ class FLW3:
         # Read the nodes
         for i in range(node_count):
             type = reader.read_uint8()
-
             match type:
                 case 1:
                     node = LMS_MessageNode()
@@ -107,7 +106,7 @@ class FLW3:
             id = reader.read_uint16()
             if id == 65535:
                 self.branch_list.append(None)
-                continue 
+                continue
             self.branch_list.append(id)
 
         # Serialize every node
@@ -140,7 +139,6 @@ class FLW3:
         writer.write_bytes(b"\x00" * 12)
 
         # Write all the nodes
-
         for node in self.nodes:
             if isinstance(node, LMS_MessageNode):
                 writer.write_uint8(1)
@@ -160,10 +158,9 @@ class FLW3:
 
             node.write(writer)
 
-        
         for id in self.branch_list:
             if id is None:
-               id = 65535
+                id = 65535
             writer.write_uint16(id)
 
         for string in self.string_table:
@@ -171,6 +168,4 @@ class FLW3:
             size += len(string) + 1
 
         self.block.size = size
-        self.block.write_ab_padding(writer)
-        self.block.write_size(writer)
-        self.block.seek_to_end(writer)
+        self.block.write_end_data(writer)

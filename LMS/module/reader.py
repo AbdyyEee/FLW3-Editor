@@ -1,5 +1,5 @@
-import struct 
-from io import  BytesIO
+import struct
+from io import BytesIO
 
 le_types = {
     "uint8": "<B",
@@ -12,9 +12,14 @@ be_types = {
     "uint32": ">I"
 }
 
+
 class Reader:
     def __init__(self, data: bytes, byte_order: str = "little"):
-        self.data = BytesIO(data) 
+        self.data = BytesIO(data)
+        self.byte_order = byte_order
+        self.types = le_types if byte_order == "little" else be_types
+
+    def change_byte_order(self, byte_order: str):
         self.byte_order = byte_order
         self.types = le_types if byte_order == "little" else be_types
 
@@ -23,16 +28,16 @@ class Reader:
 
     def read_bytes(self, length: int) -> None:
         return self.data.read(length)
-    
+
     def seek(self, offset: int, whence: int = 0) -> None:
         self.data.seek(offset, whence)
 
     def tell(self) -> int:
         return self.data.tell()
-    
+
     def read_uint8(self) -> int:
         return struct.unpack(self.types["uint8"], self.data.read(1))[0]
-    
+
     def read_uint16(self) -> int:
         return struct.unpack(self.types["uint16"], self.data.read(2))[0]
 
@@ -49,7 +54,7 @@ class Reader:
             result += char
             char = self.data.read(1)
         return result.decode("UTF-8")
-    
+
     def read_utf16_string(self):
         message = b""
         byte = self.data.read(2)
@@ -60,4 +65,3 @@ class Reader:
             byte = self.data.read(2)
 
         return message.decode("UTF-16")
-

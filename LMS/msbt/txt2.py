@@ -2,12 +2,13 @@ from LMS.common.lms_block import LMS_Block
 from LMS.module.reader import Reader
 from LMS.module.writer import Writer
 
+
 class TXT2:
     def __init__(self):
         self.block = LMS_Block()
         self.messages: list[str] = []
 
-    def read(self, reader: Reader) -> None:
+    def read(self, reader: Reader, byte_order: str) -> None:
         self.block.read_header(reader)
         message_count = reader.read_uint32()
 
@@ -17,9 +18,6 @@ class TXT2:
             offsets.append(offset)
 
         for i, offset in enumerate(offsets):
-            # Instead of reading the UTF-16 string as a regular string with read_utf16_string
-            # the next offset is obtained so a unicode decode error does not occur when the function encounters
-            # a control tag
             next_offset = (
                 offsets[i + 1]
                 if i < len(offsets) - 1
@@ -27,67 +25,29 @@ class TXT2:
             )
             reader.seek(offset)
 
-            # Parse messages including control tags
             message = b""
+            tag_data = {
+                "little": b"\x0E\x00",
+                "big": b"\x00\x0E"
+            }
             while reader.tell() < next_offset:
-                char = reader.read_bytes(1)
-                if char == b"\x0E":
-                    reader.skip(1)
-                    group = reader.read_uint16()
-                    type = reader.read_uint16()
-                    size = reader.read_uint16()
-                    parameters = reader.read_bytes(size)
-                    hex_parameters = parameters.hex()
-                    parameters = '-'.join([hex_parameters[i] + hex_parameters[i + 1] for i in range(0, len(hex_parameters), 2)]).split("-")
-                    tag = f"[n{group}.{type}:{hex_parameters}]".encode("UTF-16-LE")
+                bytes = reader.read_bytes(2)
+                if bytes == tag_data[byte_order]:
+                    tag = self.parse_control_tag(reader).encode(
+                        "UTF-16-LE" if byte_order == "little" else "UTF-16-BE")
                     message += tag
                 else:
-                    message += char
-                    i += 1
-            self.messages.append(message.decode("UTF-16-LE"))
-                    
-            
+                    message += bytes
 
-            
-               
+            self.messages.append(message.decode(
+                "UTF-16-LE") if byte_order == "little" else message.decode("UTF-16-BE"))
 
-                
-                   
-           
-                                  
-
-                
-
-
-                
-            
-
-                
-            
-                        
-
-
-
-                        
-                        
-                       
-                        
-
-                    
-
-                    
-                    
-                    
-                 
-
-                        
-
-                        
-                            
-
-                                
-                   
-
-                     
-            
-        
+    def parse_control_tag(self, reader: Reader):
+        group = reader.read_uint16()
+        type = reader.read_uint16()
+        size = reader.read_uint16()
+        raw_parameters = reader.read_bytes(size)
+        hex_parameters = raw_parameters.hex()
+        parameters = '-'.join([hex_parameters[i] + hex_parameters[i + 1]
+                              for i in range(0, len(hex_parameters), 2)])
+        return f"[n{group}.{type}:{parameters}]"
