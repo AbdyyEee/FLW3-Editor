@@ -9,11 +9,11 @@ FLW3 Editor is an application used for editing revision 3 of the `.msbf` format 
 This application is dedicated for researching the format, for an eventual node editor application to be developed.
 
 What is supported:
-* Viewing flowcharts in a list style format
+* Viewing flowcharts in a list format
 * Editing node parameters
 * Adding branches, deleting branches.
-* Adding flowchart.
-* Creating new files
+* Adding flowcharts.
+* Creating new files.
 
 ## Contributions 
 Any contributions are welcome, do so by just downloading this repo. This application was built on Python 3.10.0, and the only libraries used are PyQt6.
