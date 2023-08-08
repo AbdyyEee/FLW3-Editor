@@ -215,7 +215,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.node_list.clear()
         self.branch_list.clear()
 
-        byte_order = QtWidgets.QInputDialog.getText(self, "Select byte order", "Choose from 'little' (3DS) or 'big' (Wii U)")[0].lower()
+        byte_order = QtWidgets.QInputDialog.getText(self, "Select byte order", "Choose from 'little' (3DS) or 'big' (Wii or Wii U)")[0].lower()
         if byte_order not in ["little", "big"]:
             self.prompt_message("Select a proper byte order", type="Warning")
             return 
