@@ -1,5 +1,5 @@
 # FLW3 Editor
-FLW3 Editor is an application used for editing revision 3 of the `.msbf` format from Nintendo's LMS library. This version is most notably used in several 3DS and Wii U games. Some examples of 3DS games are:
+FLW3 Editor is an application used for editing revision 3 of the `.msbf` format from Nintendo's LMS library. This version is most notably used in several 3DS, and some Wii and Wii U games. Some examples of 3DS games are:
 * Tomodachi Life
 * Animal Crossing: New Leaf
 * Nintendo Badge Arcade
