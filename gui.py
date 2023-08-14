@@ -445,9 +445,10 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             self.string_index_edit.setEnabled(True)
             self.string_index_edit.setText(str(node.string_table_index))
         else:
-            self.string_index_edit.clear()
+            self.subtype_value_edit.setEnabled(True)
             self.string_index_edit.setEnabled(False)
-
+            self.string_index_edit.clear()
+          
         # Setting parameter information
         self.param_1_edit.setText(str(node.param_1))
         self.param_2_edit.setText(str(node.param_2))
