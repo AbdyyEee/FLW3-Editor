@@ -409,6 +409,30 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             self.label_edit.clear()
             self.message_edit.clear()
 
+        if self.current_extension is not None:
+            for node_data in self.current_extension:
+                node_name = self.get_current_node().name
+                node_name = node_name[:node_name.index(" ")]
+                if node_data["name"] == node_name:
+                    print(node_data)
+                    self.param_1_label.setText(
+                        node_data["labels"]["param_1"])
+                    self.param_2_label.setText(
+                        node_data["labels"]["param_2"])
+                    self.param_3_label.setText(
+                        node_data["labels"]["param_3"])
+                    self.param_4_label.setText(
+                        node_data["labels"]["param_4"])
+
+                    self.param_1_edit.setEnabled(
+                        node_data["edits"]["param_1"])
+                    self.param_2_edit.setEnabled(
+                        node_data["edits"]["param_2"])
+                    self.param_3_edit.setEnabled(
+                        node_data["edits"]["param_3"])
+                    self.param_4_edit.setEnabled(
+                        node_data["edits"]["param_4"])
+
         # Set generic information
         self.type_edit.setText(node.get_node_type())
         self.subtype_edit.setText(str(node.subtype))
@@ -610,31 +634,6 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                 if result == [True, True, True, True]:
                     node.name = f"{node_data['name']} {node.id}"
 
-                    def extenstion_set_param_data():
-                        if self.get_current_node() == node:
-                            self.param_1_label.setText(
-                                node_data["labels"]["param_1"])
-                            self.param_2_label.setText(
-                                node_data["labels"]["param_2"])
-                            self.param_3_label.setText(
-                                node_data["labels"]["param_3"])
-                            self.param_4_label.setText(
-                                node_data["labels"]["param_4"])
-
-                            self.param_1_edit.setEnabled(
-                                node_data["edits"]["param_1"])
-                            self.param_2_edit.setEnabled(
-                                node_data["edits"]["param_2"])
-                            self.param_3_edit.setEnabled(
-                                node_data["edits"]["param_3"])
-                            self.param_4_edit.setEnabled(
-                                node_data["edits"]["param_4"])
-                        else:
-                            return
-
-                    self.node_list.itemClicked.connect(
-                        extenstion_set_param_data)
-
     def extension_disable(self):
         if self.current_extension is None:
             return
@@ -747,6 +746,7 @@ class NextNode_Popup(QtWidgets.QMainWindow):
             new_node.string_table_index = string_index
 
         new_node.id = len(self.parent.msbf.flw3.nodes)
+        new_node.name = str(new_node)
         self.parent.msbf.flw3.nodes.append(new_node)
 
         if not self.branch:
