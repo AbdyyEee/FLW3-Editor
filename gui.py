@@ -1,4 +1,6 @@
 import sys
+import yaml
+import os
 
 from PyQt6 import QtGui, QtWidgets, uic
 
@@ -19,6 +21,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.current_label: str = None
         self.current_nodes: list[LMS_BaseNode] = []
         self.previous_nodes: list[LMS_BaseNode] | None = None
+        self.current_extension = None
         self.byte_order: str = None
 
         # -- Variables --
@@ -61,9 +64,15 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.label_edit: QtWidgets.QLineEdit = None
 
         # Menubar
+        self.file_menu: QtWidgets.QMenuBar = None
+        self.extensions_menu: QtWidgets.QMenuBar = None
+        self.menu_load: QtWidgets.QMenuBar = None
+
+        # Menu bar actions
         self.actionNewFile: QtGui.QAction = None
         self.actionOpen: QtGui.QAction = None
         self.actionSave: QtGui.QAction = None
+        self.actionDisable: QtGui.QAction = None
 
         uic.load_ui.loadUi("Ui/Main.ui", self)
         self.setWindowTitle("FLW3 Editor: By AbdyyEee")
@@ -75,6 +84,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.actionOpen.triggered.connect(self.initialize_msbf)
         self.actionSave.triggered.connect(self.export_msbf)
         self.actionNewFile.triggered.connect(self.new_msbf)
+        self.actionDisable.triggered.connect(self.extension_disable)
 
         # List views
         self.flowchart_list.itemClicked.connect(self.flowchart_clicked)
@@ -105,6 +115,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
         # Disable till msbf is loaded
         self.actionSave.setEnabled(False)
+        self.extensions_menu.setEnabled(False)
         self.goto_root_button.setEnabled(False)
         self.add_next_node_button.setEnabled(False)
         self.add_string_button.setEnabled(False)
@@ -113,6 +124,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.add_branch_button.setEnabled(False)
         self.add_flowchart_button.setEnabled(False)
         self.back_button.setEnabled(False)
+
+        self.extension_add_games_to_list()
 
     # MSBF functions
     def initialize_msbf(self, is_new=False):
@@ -157,11 +170,11 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                     self.msbf.read(reader, self.msbt.txt2)
                 else:
                     self.msbf.read(reader, None)
-        
+
         if is_new:
             self.msbf.binary.bom = self.byte_order
         else:
-           self.byte_order = self.msbf.binary.bom
+            self.byte_order = self.msbf.binary.bom
 
         # Populate the flowchart list
         for label in self.msbf.flw3.flowcharts:
@@ -179,6 +192,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
         # Re-enable all the previously disabled items
         self.actionSave.setEnabled(True)
+        self.extensions_menu.setEnabled(True)
         self.goto_root_button.setEnabled(True)
         self.add_next_node_button.setEnabled(True)
         self.add_string_button.setEnabled(True)
@@ -215,11 +229,12 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.node_list.clear()
         self.branch_list.clear()
 
-        byte_order = QtWidgets.QInputDialog.getText(self, "Select byte order", "Choose from 'little' (3DS) or 'big' (Wii or Wii U)")[0].lower()
+        byte_order = QtWidgets.QInputDialog.getText(
+            self, "Select byte order", "Choose from 'little' (3DS) or 'big' (Wii or Wii U)")[0].lower()
         if byte_order not in ["little", "big"]:
             self.prompt_message("Select a proper byte order", type="Warning")
-            return 
-        
+            return
+
         self.byte_order = byte_order
         self.initialize_msbf(is_new=True)
 
@@ -263,27 +278,45 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.add_nodes_to_list()
 
     def refresh_node_list(self):
+        if self.node_list.count() == 0:
+            return
         self.node_list.clear()
 
         for i in range(0, len(self.current_nodes) - 1):
             node = self.current_nodes[i]
-            self.node_list.addItem(str(node))
+            self.extension_match_node(node)
+            self.node_list.addItem(node.name)
             node.next_node_id = self.current_nodes[i + 1].id
 
         self.node_list.addItem(
-            str(self.current_nodes[len(self.current_nodes) - 1]))
+            self.current_nodes[len(self.current_nodes) - 1].name)
+
+    def refresh_branch_list(self):
+        if self.branch_list.count() == 0:
+            return
+
+        self.branch_list.clear()
+        node: LMS_BranchNode = self.get_current_node()
+        for branch in node.branches:
+            if branch is None:
+                self.branch_list.addItem(str(branch))
+                continue
+            self.extension_match_node(branch)
+            self.branch_list.addItem(branch.name)
 
     def add_nodes_to_list(self, node_to_add: LMS_BaseNode | None = None):
         if node_to_add == None:
             for node in self.current_nodes:
-                self.node_list.addItem(str(node))
+                self.extension_match_node(node)
+                self.node_list.addItem(node.name)
                 if isinstance(node, LMS_JumpNode):
                     break
         else:
             node_list = self.msbf.flw3.serialize_node(node_to_add)
             self.current_nodes = node_list
             for node in self.current_nodes:
-                self.node_list.addItem(str(node))
+
+                self.node_list.addItem(node.name)
                 if isinstance(node, LMS_JumpNode):
                     break
 
@@ -333,6 +366,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
     def node_clicked(self):
         self.branch_list.clear()
         node = self.get_current_node()
+        self.extension_match_node(node)
 
         # Handling enabling of parameter edits
         if type(node) == LMS_EntryNode or type(node) == LMS_JumpNode:
@@ -358,7 +392,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         if isinstance(node, LMS_MessageNode):
             self.param_3_label.setText("MSBT index")
             self.param_4_label.setText("File index")
-    
+
         elif isinstance(node, LMS_BranchNode):
             self.param_3_label.setText("Branch count")
             self.param_4_label.setText("Branch index")
@@ -399,8 +433,12 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
         if isinstance(node, LMS_BranchNode):
             # Add branches to branch list
-            for branch in node.branches:
+            for i, branch in enumerate(node.branches):
                 self.branch_list.addItem(str(branch))
+
+                if branch is not None:
+                    self.extension_match_node(branch)
+                    self.branch_list.item(i).setText(branch.name)
 
     def branch_node_double_clicked(self):
         node = self.get_current_branch_node()
@@ -512,6 +550,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
     def prompt_message(self, message: str, type: str):
         warning = QtWidgets.QMessageBox()
+        warning.setWindowTitle("FLW3 Editor")
         warning.setText(message)
 
         if type == "Message":
@@ -521,6 +560,90 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             warning.setIcon(QtWidgets.QMessageBox.Icon.Critical)
 
         warning.exec()
+
+    def extension_add_games_to_list(self):
+        for file in os.listdir(f"Extensions"):
+            name = file[:file.index(".yaml")]
+            game_action = self.menu_load.addAction(name)
+
+            def extension_load():
+                with open(f"Extensions/{file}", "r") as extension:
+                    self.current_extension = yaml.safe_load(extension)
+                    self.prompt_message(
+                        f"This extension has been loaded.", type="Message")
+
+                    self.refresh_node_list()
+                    self.refresh_branch_list()
+
+            game_action.triggered.connect(extension_load)
+
+    def extension_match_node(self, node: LMS_BaseNode):
+        if node is None:
+            return
+
+        if self.current_extension is None:
+            node.name = str(node)
+            return
+
+        node_values = [node.param_1, node.param_2, node.param_3, node.param_4]
+        for node_data in self.current_extension:
+            result: list[bool, bool, bool, bool] = []
+            matched_values = node_data["node_values"]
+
+            if type(node) in [LMS_MessageNode, LMS_EntryNode, LMS_JumpNode]:
+                return
+
+            if node_data["type"] == node.get_node_type() and node_data["subtype"] == node.subtype.value:
+
+                for i in range(len(matched_values)):
+                    value = matched_values[i]
+                    if value == node_values[i]:
+                        result.append(True)
+                        continue
+
+                    if value == "any":
+                        result.append(True)
+                        continue
+
+                    result.append(False)
+
+                if result == [True, True, True, True]:
+                    node.name = f"{node_data['name']} {node.id}"
+
+                    def extenstion_set_param_data():
+                        if self.get_current_node() == node:
+                            self.param_1_label.setText(
+                                node_data["labels"]["param_1"])
+                            self.param_2_label.setText(
+                                node_data["labels"]["param_2"])
+                            self.param_3_label.setText(
+                                node_data["labels"]["param_3"])
+                            self.param_4_label.setText(
+                                node_data["labels"]["param_4"])
+
+                            self.param_1_edit.setEnabled(
+                                node_data["edits"]["param_1"])
+                            self.param_2_edit.setEnabled(
+                                node_data["edits"]["param_2"])
+                            self.param_3_edit.setEnabled(
+                                node_data["edits"]["param_3"])
+                            self.param_4_edit.setEnabled(
+                                node_data["edits"]["param_4"])
+                        else:
+                            return
+
+                    self.node_list.itemClicked.connect(
+                        extenstion_set_param_data)
+
+    def extension_disable(self):
+        if self.current_extension is None:
+            return
+        self.current_extension = None
+        self.prompt_message(
+            "The current extension has been disabled.", "Message")
+
+        self.refresh_node_list()
+        self.refresh_branch_list()
 
 
 class NextNode_Popup(QtWidgets.QMainWindow):

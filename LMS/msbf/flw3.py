@@ -121,6 +121,7 @@ class FLW3:
         # Add ID attribute to every node
         for i, node in enumerate(self.nodes):
             node.id = i
+            node.name = str(node)
             if node.next_node is not None:
                 node.next_node.id = node.next_node_id
 

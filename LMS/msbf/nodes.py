@@ -16,6 +16,7 @@ class LMS_NodeSubtypes(Enum):
 
 class LMS_BaseNode:
     def __init__(self):
+        self.name: str = None
         self.id: int = None
         self.string_table_index: int = None
         self.subtype: LMS_NodeSubtypes = LMS_NodeSubtypes(255)

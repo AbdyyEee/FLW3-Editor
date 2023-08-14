@@ -1,0 +1,126 @@
+- name: Subtype0
+  type: LMS_EventNode
+  subtype: 0
+  node_values:
+  - any
+  - any
+  - any
+  - any
+  labels:
+    param_1: Parameter 1
+    param_2: Parameter 2
+    param_3: Parameter 3
+    param_4: Parameter 4
+  edits:
+    param_1: false
+    param_2: false
+    param_3: false
+    param_4: false
+- name: Subtype1
+  type: LMS_EventNode
+  subtype: 1
+  node_values:
+  - any
+  - any
+  - any
+  - any
+  labels:
+    param_1: Parameter 1
+    param_2: Parameter 2
+    param_3: Parameter 3
+    param_4: Parameter 4
+  edits:
+    param_1: false
+    param_2: false
+    param_3: false
+    param_4: false
+- name: Subtype2
+  type: LMS_EventNode
+  subtype: 2
+  node_values:
+  - any
+  - any
+  - any
+  - any
+  labels:
+    param_1: Parameter 1
+    param_2: Parameter 2
+    param_3: Parameter 3
+    param_4: Parameter 4
+  edits:
+    param_1: false
+    param_2: false
+    param_3: false
+    param_4: false
+- name: Subtype3
+  type: LMS_EventNode
+  subtype: 3
+  node_values:
+  - any
+  - any
+  - any
+  - any
+  labels:
+    param_1: Parameter 1
+    param_2: Parameter 2
+    param_3: Parameter 3
+    param_4: Parameter 4
+  edits:
+    param_1: false
+    param_2: false
+    param_3: false
+    param_4: false
+- name: Subtype4
+  type: LMS_EventNode
+  subtype: 4
+  node_values:
+  - any
+  - any
+  - any
+  - any
+  labels:
+    param_1: Parameter 1
+    param_2: Parameter 2
+    param_3: Parameter 3
+    param_4: Parameter 4
+  edits:
+    param_1: false
+    param_2: false
+    param_3: false
+    param_4: false
+- name: Subtype5
+  type: LMS_EventNode
+  subtype: 5
+  node_values:
+  - any
+  - any
+  - any
+  - any
+  labels:
+    param_1: Parameter 1
+    param_2: Parameter 2
+    param_3: Parameter 3
+    param_4: Parameter 4
+  edits:
+    param_1: false
+    param_2: false
+    param_3: false
+    param_4: false
+- name: Subtype6
+  type: LMS_EventNode
+  subtype: 6
+  node_values:
+  - any
+  - any
+  - any
+  - any
+  labels:
+    param_1: Parameter 1
+    param_2: Parameter 2
+    param_3: Parameter 3
+    param_4: Parameter 4
+  edits:
+    param_1: false
+    param_2: false
+    param_3: false
+    param_4: false
