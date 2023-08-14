@@ -49,9 +49,8 @@ class FLW3:
 
     def get_entry_node_by_label(self, label: str):
         for node in self.nodes:
-            if type(node) == LMS_EntryNode:
-                if node.label == label:
-                    return node
+            if isinstance(node, LMS_EntryNode) and node.label == label:
+                return node
 
     def read(self, reader: Reader, fen1: LMS_HashTableBlock, txt2: TXT2):
         string_table_index = 0
@@ -92,13 +91,13 @@ class FLW3:
 
             if node.subtype == LMS_NodeSubtypes.string_table:
                 end = reader.tell()
-                reader.seek(data_start)
-                reader.seek(node.subtype_value, 1)
+                string_offset = data_start + node.subtype_value
+                reader.seek(string_offset)
+
                 string = reader.read_string_nt()
                 node.string_table_index = string_table_index
                 self.string_table.append(string)
                 reader.seek(end)
-
                 string_table_index += 1
 
         # Read all the branch ids
@@ -112,9 +111,11 @@ class FLW3:
         # Serialize every node
         for node in self.nodes:
             if isinstance(node, LMS_BranchNode):
-                for id in self.branch_list[node.param_4: node.param_3 + node.param_4]:
-                    next_branch_node = self.try_get_node(id)
-                    node.branches.append(next_branch_node)
+                branch_end = node.param_3 + node.param_4
+                branch_part = self.branch_list[node.param_4: branch_end]
+                for id in branch_part:
+                    branched_node = self.try_get_node(id)
+                    node.branches.append(branched_node)
             else:
                 node.next_node = self.try_get_node(node.next_node_id)
 
@@ -122,8 +123,6 @@ class FLW3:
         for i, node in enumerate(self.nodes):
             node.id = i
             node.name = str(node)
-            if node.next_node is not None:
-                node.next_node.id = node.next_node_id
 
     def write(self, writer: Writer):
         self.block.magic = "FLW3"
@@ -132,7 +131,7 @@ class FLW3:
 
         node_count = len(self.nodes)
         branch_id_count = len(self.branch_list)
-        size = (node_count * 16 + 16) + branch_id_count * 2
+        size = node_count * 16 + 16 + branch_id_count * 2
         string_offset = size
 
         writer.write_uint16(node_count)
