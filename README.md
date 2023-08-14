@@ -16,6 +16,10 @@ What is supported:
 * Adding branches, deleting branches.
 * Adding flowcharts.
 * Creating new files.
+* Using configuration files to document nodes
+
+## Extensions
+A rough overview on how to write [extensions](https://github.com/AbdyyEee/FLW3-Editor/wiki/Extensions) is on the wiki.
 
 ## Contributions 
 Any contributions are welcome, do so by just downloading this repo. This application was built on Python 3.10.0, and the only libraries used are PyQt6.
