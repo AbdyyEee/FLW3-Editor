@@ -414,7 +414,6 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                 node_name = self.get_current_node().name
                 node_name = node_name[:node_name.index(" ")]
                 if node_data["name"] == node_name:
-                    print(node_data)
                     self.param_1_label.setText(
                         node_data["labels"]["param_1"])
                     self.param_2_label.setText(
