@@ -5,10 +5,10 @@ from LMS.module.writer import Writer
 class LMS_Block:
     def __init__(self):
         self.magic: str = None
-        self.size: int = None
+        self.size: int = 0
         self.data_start: int = None
 
-    def read_header(self, reader: Reader) -> None:
+    def read_header(self, reader: Reader):
         self.magic = reader.read_string_len(4)
         self.size = reader.read_uint32()
         reader.skip(8)
@@ -20,7 +20,7 @@ class LMS_Block:
         remainder = 16 - self.size % 16
         object.seek(remainder, 1)
 
-    def write_header(self, writer: Writer) -> None:
+    def write_header(self, writer: Writer):
         writer.write_string(self.magic)
         writer.write_uint32(0)
         writer.write_bytes(b"\x00" * 8)
@@ -29,7 +29,7 @@ class LMS_Block:
         remainder = 16 - self.size % 16
         if remainder == 16:
             return 0
-        writer.write_bytes(b"\xab" * remainder)
+        writer.write_bytes(b"\xAB" * remainder)
         return remainder
 
     def write_size(self, writer: Writer):

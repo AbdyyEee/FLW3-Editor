@@ -7,13 +7,12 @@ from LMS.common.lms_binary import LMS_Binary
 class LMS_HashTableBlock:
     def __init__(self):
         self.block = LMS_Block()
-        self.labels: dict[str:int] = {}
-        self.index = 0
+        self.labels: dict[int:str] = {}
 
     def get_index_by_label(self, label: str):
-        for key in self.labels:
-            if self.labels[key] == label:
-                return key
+        for index in self.labels:
+            if self.labels[index] == label:
+                return index
 
     def read(self, reader: Reader) -> None:
         self.block.read_header(reader)
@@ -86,6 +85,4 @@ class LMS_HashTableBlock:
                 size += 5 + len(label)
 
         self.block.size = size
-        self.block.write_ab_padding(writer)
-        self.block.write_size(writer)
-        self.block.seek_to_end(writer)
+        self.block.write_end_data(writer)

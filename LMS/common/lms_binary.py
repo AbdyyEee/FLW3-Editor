@@ -14,9 +14,9 @@ class LMS_Binary:
         self.magic: str = None
         self.bom: str = None
         self.encoding: LMS_MessageEncoding = None
-        self.revision: int = None
-        self.block_count: int = None
-        self.file_size: int = None
+        self.revision: int = 0
+        self.block_count: int = 0
+        self.file_size: int = 0
 
     def read_header(self, reader: Reader) -> None:
         self.magic = reader.read_string_len(8)
@@ -46,11 +46,17 @@ class LMS_Binary:
         writer.write_uint32(0)
         writer.write_bytes(b"\x00" * 10)
 
-    def search_block_by_name(self, reader: Reader, name: str) -> int:
+    def write_size(self, writer: Writer):
+        writer.seek(0, 2)
+        size = writer.tell()
+        writer.seek(18)
+        writer.write_uint32(size)
+
+    def search_block_by_name(self, reader: Reader, name: str):
         blocks = self.search_all_blocks(reader)
         return blocks[name] if name in blocks else -1
 
-    def search_all_blocks(self, reader: Reader) -> dict[str:int]:
+    def search_all_blocks(self, reader: Reader):
         result = {}
         reader.seek(32)
         block_count = self.block_count

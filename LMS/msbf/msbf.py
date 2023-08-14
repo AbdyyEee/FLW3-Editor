@@ -26,21 +26,15 @@ class MSBF:
 
     def write(self, writer: Writer) -> None:
         self.binary.magic = "MsgFlwBn"
-        self.binary.file_size = 0
         self.binary.encoding = LMS_MessageEncoding(0)
         self.binary.revision = 3
         self.binary.block_count = 2
 
         self.flw3.block.magic = "FLW3"
-        self.flw3.block.size = 0
         self.fen1.block.magic = "FEN1"
-        self.fen1.block.size = 0
+        
         self.binary.write_header(writer)
-
         self.flw3.write(writer)
         self.fen1.write(writer)
 
-        writer.seek(0, 2)
-        size = writer.tell()
-        writer.seek(18)
-        writer.write_uint32(size)
+    
