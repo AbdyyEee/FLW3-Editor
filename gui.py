@@ -448,7 +448,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             self.subtype_value_edit.setEnabled(True)
             self.string_index_edit.setEnabled(False)
             self.string_index_edit.clear()
-          
+
         # Setting parameter information
         self.param_1_edit.setText(str(node.param_1))
         self.param_2_edit.setText(str(node.param_2))
@@ -736,8 +736,7 @@ class NextNode_Popup(QtWidgets.QMainWindow):
                 return
 
             new_node.param_3 = 65535
-            new_node.next_node_id = self.parent.msbf.fen1.get_index_by_label(
-                label)
+            new_node.next_node_id = self.parent.msbf.flw3.flowcharts[label][0].id
 
         if new_node.subtype == LMS_NodeSubtypes.string_table:
             string_index = QtWidgets.QInputDialog.getInt(
