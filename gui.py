@@ -1,6 +1,7 @@
 import sys
 import yaml
 import os
+import traceback
 
 from PyQt6 import QtGui, QtWidgets, uic
 
@@ -129,6 +130,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.extension_add_games_to_list()
 
     # MSBF functions
+    # --------------
     def initialize_msbf(self, is_new=False):
         self.msbf = MSBF()
         self.msbt = MSBT()
@@ -161,16 +163,26 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             if len(msbt_path) > 0:
                 with open(msbt_path, "rb+") as message:
                     reader = Reader(message.read())
-                    self.msbt.read(reader)
+                    try:
+                        self.msbt.read(reader)
+                    except Exception:
+                        self.prompt_message(
+                            f"An error occured while reading the MSBT file.\n\nError: {traceback.format_exc()}", type="Warning"
+                        )
+
             else:
                 self.msbt = None
 
             with open(msbf_path, "rb+") as flow:
                 reader = Reader(flow.read())
-                if self.msbt is not None:
-                    self.msbf.read(reader, self.msbt.txt2)
-                else:
-                    self.msbf.read(reader, None)
+                try:
+                    if self.msbt is not None:
+                        self.msbf.read(reader, self.msbt.txt2)
+                    else:
+                        self.msbf.read(reader, None)
+                except Exception:
+                    self.prompt_message(
+                        f"An error occured while reading the MSBF file.\n\nError: {traceback.format_exc()}", type="Warning")
 
         if is_new:
             self.msbf.binary.bom = self.byte_order
@@ -217,10 +229,11 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             writer = Writer(flow, self.byte_order)
             try:
                 self.msbf.write(writer)
-            except:
+            except Exception:
                 self.prompt_message(
-                    "An error occured while writing the MSBF file.", type="Warning"
+                    f"An error occured while writing the MSBF file.\n\nError: {traceback.format_exc()}", type="Warning"
                 )
+                return
 
         self.prompt_message(
             "The MSBF has been written succesfully.", type="Message")
@@ -242,6 +255,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.prompt_message(
             "A new MSBF file has been created.", type="Message")
 
+    # Flowchart related functions
+    # ----------------------
     def new_flowchart(self):
         label = QtWidgets.QInputDialog.getText(
             self, "Add a flowchart", "Input the new label"
@@ -261,11 +276,24 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         id = len(self.msbf.flw3.nodes)
         entry_node.label = label
         entry_node.id = id
+
         self.msbf.fen1.labels[id] = label
         self.msbf.flw3.nodes.append(entry_node)
-        self.msbf.flw3.flowcharts[label] = []
-        self.msbf.flw3.flowcharts[label].append(entry_node)
+        self.msbf.flw3.flowcharts[label] = [entry_node]
+        self.msbf.flw3.flowcharts[label]
         self.flowchart_list.addItem(label)
+
+    def goto_root(self):
+        if len(self.flowchart_list.selectedIndexes()) == 0:
+            return
+
+        self.node_list.clear()
+        self.branch_list.clear()
+
+        for node in self.msbf.flw3.flowcharts[self.current_label]:
+            self.node_list.addItem(str(node))
+
+        self.current_nodes = self.msbf.flw3.flowcharts[self.current_label]
 
     def go_back(self):
         if self.current_node_index == 0:
@@ -286,6 +314,42 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
         self.current_nodes = self.msbf.flw3.serialize_node(previous_node)
         self.add_nodes_to_list()
+
+    # String table related functions
+    # ------------------------------
+    def add_string(self):
+        new_string = QtWidgets.QInputDialog.getText(
+            self, "Add string", "String")[0]
+        self.strings_list.addItem(new_string)
+        self.msbf.flw3.string_table.append(new_string)
+
+    def edit_string(self):
+        current_row = self.strings_list.currentRow()
+        current_text = self.strings_list.item(current_row).text()
+        edited_string = QtWidgets.QInputDialog.getText(
+            self, "Edit string", "String", text=current_text
+        )[0]
+        self.strings_list.item(current_row).setText(edited_string)
+
+        self.msbf.flw3.string_table[current_row] = edited_string
+
+    def find_string_reference(self):
+        self.node_list.clear()
+        self.branch_list.clear()
+        referenced_node = None
+
+        for node in self.msbf.flw3.nodes:
+            if isinstance(node, LMS_BranchNode) or isinstance(node, LMS_EventNode):
+                if node.string_table_index == self.strings_list.currentRow():
+                    referenced_node = node
+
+        self.add_nodes_to_list(referenced_node)
+
+    def string_clicked(self):
+        self.index_edit.setText(str(self.strings_list.currentRow()))
+
+    # Node related functions
+    # ----------------------
 
     def refresh_node_list(self):
         if self.node_list.count() == 0:
@@ -346,25 +410,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         branch_node = self.get_current_node()
         return branch_node.branches
 
-    def warn_if_entry_or_jump(self):
-        self.prompt_message(
-            "You are attempting to add a Jump or Entry node. \nProceed ONLY if you know what you are doing.\n\nCrashes MAY occur in-game and in the tool, and the file may not be able to be loaded again in this tool.",
-            type="Warning",
-        )
-        return
-
-    def goto_root(self):
-        if len(self.flowchart_list.selectedIndexes()) == 0:
-            return
-
-        self.node_list.clear()
-        self.branch_list.clear()
-
-        for node in self.msbf.flw3.flowcharts[self.current_label]:
-            self.node_list.addItem(str(node))
-
-        self.current_nodes = self.msbf.flw3.flowcharts[self.current_label]
-
+    # Touch event functions
+    # ---------------------
     def flowchart_clicked(self):
         self.previous_start_nodes = []
         self.current_node_index = 0
@@ -513,6 +560,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
     def add_branch(self):
         self.popup = NextNode_Popup(self, branch=True)
 
+    # Edit event functions
+    # --------------------
     def on_param_1_edit(self):
         node = self.get_current_node()
         text: str = self.param_1_edit.text()
@@ -555,50 +604,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         if text.isnumeric():
             node.subtype_value = int(text)
 
-    def string_clicked(self):
-        self.index_edit.setText(str(self.strings_list.currentRow()))
-
-    def add_string(self):
-        new_string = QtWidgets.QInputDialog.getText(
-            self, "Add string", "String")[0]
-        self.strings_list.addItem(new_string)
-        self.msbf.flw3.string_table.append(new_string)
-
-    def edit_string(self):
-        current_row = self.strings_list.currentRow()
-        current_text = self.strings_list.item(current_row).text()
-        edited_string = QtWidgets.QInputDialog.getText(
-            self, "Edit string", "String", text=current_text
-        )[0]
-        self.strings_list.item(current_row).setText(edited_string)
-
-        self.msbf.flw3.string_table[current_row] = edited_string
-
-    def find_string_reference(self):
-        self.node_list.clear()
-        self.branch_list.clear()
-        referenced_node = None
-
-        for node in self.msbf.flw3.nodes:
-            if isinstance(node, LMS_BranchNode) or isinstance(node, LMS_EventNode):
-                if node.string_table_index == self.strings_list.currentRow():
-                    referenced_node = node
-
-        self.add_nodes_to_list(referenced_node)
-
-    def prompt_message(self, message: str, type: str):
-        warning = QtWidgets.QMessageBox()
-        warning.setWindowTitle("FLW3 Editor")
-        warning.setText(message)
-
-        if type == "Message":
-            warning.setIcon(QtWidgets.QMessageBox.Icon.Information)
-
-        if type == "Warning":
-            warning.setIcon(QtWidgets.QMessageBox.Icon.Critical)
-
-        warning.exec()
-
+    # Extension functions
+    # -------------------
     def extension_add_games_to_list(self):
         for file in os.listdir(f"Extensions"):
             name = file[:file.index(".yaml")]
@@ -657,6 +664,20 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
         self.refresh_node_list()
         self.refresh_branch_list()
+
+    # Miscellaneous
+    def prompt_message(self, message: str, type: str):
+        warning = QtWidgets.QMessageBox()
+        warning.setWindowTitle("FLW3 Editor")
+        warning.setText(message)
+
+        if type == "Message":
+            warning.setIcon(QtWidgets.QMessageBox.Icon.Information)
+
+        if type == "Warning":
+            warning.setIcon(QtWidgets.QMessageBox.Icon.Critical)
+
+        warning.exec()
 
 
 class NextNode_Popup(QtWidgets.QMainWindow):
