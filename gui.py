@@ -20,7 +20,8 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.msbt: MSBT = None
         self.current_label: str = None
         self.current_nodes: list[LMS_BaseNode] = []
-        self.previous_nodes: list[LMS_BaseNode] | None = None
+        self.previous_start_nodes: list[LMS_BaseNode] = []
+        self.current_node_index = 0
         self.current_extension = None
         self.byte_order: str = None
 
@@ -267,14 +268,23 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.flowchart_list.addItem(label)
 
     def go_back(self):
-        # TODO: Implement going back as many times until root
-        if self.previous_nodes is None:
+        if self.current_node_index == 0:
             return
 
         self.node_list.clear()
         self.branch_list.clear()
 
-        self.current_nodes = self.previous_nodes
+        del self.previous_start_nodes[self.current_node_index]
+        self.current_node_index -= 1
+
+        previous_node: LMS_BaseNode = self.previous_start_nodes[self.current_node_index]
+        # Select the flowchart from the flowchart list if the previous node is entry\
+        if isinstance(previous_node, LMS_EntryNode):
+            for i in range(self.flowchart_list.count()):
+                if self.flowchart_list.item(i).text() == previous_node.label:
+                    self.flowchart_list.item(i).setSelected(True)
+
+        self.current_nodes = self.msbf.flw3.serialize_node(previous_node)
         self.add_nodes_to_list()
 
     def refresh_node_list(self):
@@ -305,7 +315,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             self.branch_list.addItem(branch.name)
 
     def add_nodes_to_list(self, node_to_add: LMS_BaseNode | None = None):
-        if node_to_add == None:
+        if node_to_add is None:
             for node in self.current_nodes:
                 self.extension_match_node(node)
                 self.node_list.addItem(node.name)
@@ -313,9 +323,12 @@ class MSBF_Editor(QtWidgets.QMainWindow):
                     break
         else:
             node_list = self.msbf.flw3.serialize_node(node_to_add)
-            self.current_nodes = node_list
-            for node in self.current_nodes:
 
+            self.previous_start_nodes.append(node_list[0])
+            self.current_node_index += 1
+            self.current_nodes = node_list
+
+            for node in self.current_nodes:
                 self.node_list.addItem(node.name)
                 if isinstance(node, LMS_JumpNode):
                     break
@@ -353,7 +366,10 @@ class MSBF_Editor(QtWidgets.QMainWindow):
         self.current_nodes = self.msbf.flw3.flowcharts[self.current_label]
 
     def flowchart_clicked(self):
+        self.previous_start_nodes = []
+        self.current_node_index = 0
         self.node_list.clear()
+        self.previous_start_nodes.clear()
 
         label = self.flowchart_list.item(
             self.flowchart_list.currentRow()).text()
@@ -362,6 +378,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
         self.add_nodes_to_list()
         self.current_label = label
+        self.previous_start_nodes.append(flowchart[0])
 
     def node_clicked(self):
         self.branch_list.clear()
@@ -472,10 +489,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
 
         self.branch_list.clear()
         self.node_list.clear()
-        self.previous_nodes = self.current_nodes
-        self.current_nodes = self.msbf.flw3.serialize_node(node)
-
-        self.add_nodes_to_list()
+        self.add_nodes_to_list(node)
 
     def jump_node_double_clicked(self):
         node: LMS_JumpNode = self.get_current_node()
@@ -491,7 +505,7 @@ class MSBF_Editor(QtWidgets.QMainWindow):
             self.node_list.clear()
             self.branch_list.clear()
             entry_node = self.msbf.flw3.get_entry_node_by_label(label)
-            self.add_nodes_to_list(node_to_add=entry_node)
+            self.add_nodes_to_list(entry_node)
 
     def add_node(self):
         self.popup = NextNode_Popup(self)
@@ -736,6 +750,7 @@ class NextNode_Popup(QtWidgets.QMainWindow):
                 return
 
             new_node.param_3 = 65535
+
             new_node.next_node_id = self.parent.msbf.flw3.flowcharts[label][0].id
 
         if new_node.subtype == LMS_NodeSubtypes.string_table:

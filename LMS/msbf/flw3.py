@@ -81,7 +81,7 @@ class FLW3:
                     node.read(reader)
                     label = fen1.labels[i]
                     node.label = label
-                    self.flowcharts[label] = []
+                    self.flowcharts[label] = [node]
                 case 5:
                     node = LMS_JumpNode()
                     node.read(reader)
